@@ -34,7 +34,7 @@ export function RevenueRowActions({
   const [open, setOpen] = useState(false);
   return (
     <div className="flex items-center justify-end gap-1">
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+      <Button variant="ghost" size="sm" aria-label="Editar" onClick={() => setOpen(true)}>
         <Pencil className="h-4 w-4" />
       </Button>
       <DeleteButton

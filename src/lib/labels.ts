@@ -19,3 +19,15 @@ export const REVENUE_STATUS_LABELS: Record<string, string> = {
   RECEBIDA: "Recebida",
   CANCELADA: "Cancelada",
 };
+
+export const DOCUMENT_CATEGORY_LABELS: Record<string, string> = {
+  COMPROVANTE: "Comprovante",
+  NOTA_FISCAL: "Nota fiscal",
+  CARTAO: "Cartão",
+  RELATORIO: "Relatório",
+  MERCADO_LIVRE: "Mercado Livre",
+  ANUNCIO: "Anúncio",
+  CONTRATO: "Contrato",
+  FINANCEIRO: "Financeiro",
+  OUTRO: "Outro",
+};

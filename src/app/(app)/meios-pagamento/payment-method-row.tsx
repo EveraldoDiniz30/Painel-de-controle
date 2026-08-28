@@ -52,7 +52,7 @@ export function PaymentMethodRow({
         <Badge tone={paymentMethod.active ? "success" : "neutral"}>
           {paymentMethod.active ? "Ativo" : "Inativo"}
         </Badge>
-        <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+        <Button variant="ghost" size="sm" aria-label="Editar" onClick={() => setOpen(true)}>
           <Pencil className="h-4 w-4" />
         </Button>
       </div>

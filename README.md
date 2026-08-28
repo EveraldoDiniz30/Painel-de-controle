@@ -70,6 +70,7 @@ src/
       despesas/ receitas/   financeiro (cada módulo: page + actions + form + modals)
       aportes/ retiradas/
       meios-pagamento/
+      documentos/           central de documentos (upload avulso + listagem com relação)
       em-breve/[modulo]/    placeholder honesto para módulos ainda não implementados
     api/
       auth/[...nextauth]/   NextAuth
@@ -130,7 +131,7 @@ As tabelas sem interface ainda (Grupos, Produtos, Links, Comissões, Campanhas)
 aparecem nos cards do dashboard com valores reais (zero, por enquanto) em vez de
 dados fictícios — o dashboard consulta o banco de verdade.
 
-## 5. O que está implementado (Fases 1–6)
+## 5. O que está implementado (Fases 1–7)
 
 - [x] Fundação: Next.js + TypeScript + Tailwind + Prisma + banco de dados
 - [x] Autenticação (Júnior e Maike, ambos administradores) e proteção de rotas
@@ -141,13 +142,18 @@ dados fictícios — o dashboard consulta o banco de verdade.
 - [x] Acerto entre sócios (cálculo automático, sem transferência)
 - [x] Dashboard: cards de KPI, filtros de período, 4 gráficos (evolução
       financeira, despesas por categoria, por sócio e por meio de pagamento)
-- [x] Auditoria de alterações financeiras
+- [x] Documentos: central que lista todos os comprovantes já anexados nos
+      lançamentos financeiros (com o link para o lançamento de origem) e
+      permite upload avulso (notas fiscais, contratos, relatórios), com
+      visualização e exclusão
+- [x] Auditoria de alterações financeiras e de documentos
 - [x] Responsivo (sidebar colapsável, cards em grid, gráficos e tabelas com
       scroll horizontal em telas pequenas)
 
 Testado manualmente via Playwright (login, CRUD de cada módulo, edição, exclusão,
-upload de comprovante, cálculo de acerto, aviso de participação != 100%,
-navegação mobile) — ver histórico de sessão para os fluxos verificados.
+upload/visualização/exclusão de comprovante e documento avulso, cálculo de
+acerto, aviso de participação != 100%, navegação mobile) — ver histórico de
+sessão para os fluxos verificados.
 
 ## 6. Roadmap (próximas fases)
 
@@ -156,7 +162,6 @@ em vez de links fictícios ou funcionalidades incompletas:
 
 | Fase | Módulo | Observação |
 |---|---|---|
-| 7 | Documentos | Central de documentos (o upload de comprovante já existe por registro; falta a tela central com filtros/categorias) |
 | 8 | Grupos de WhatsApp | Tabelas `Group` e `GroupMembershipHistory` já existem no schema |
 | 9 | Produtos, Links de afiliados, Comissões | Tabelas já existem no schema |
 | 10 | Marketing / Campanhas | Tabela `Campaign` já existe no schema |

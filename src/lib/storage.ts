@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 
@@ -52,4 +52,12 @@ export async function saveUploadedFile(file: File): Promise<{
 
 export function resolveUploadPath(fileName: string): string {
   return path.join(UPLOAD_DIR, path.basename(fileName));
+}
+
+export async function deleteUploadedFile(fileName: string): Promise<void> {
+  try {
+    await unlink(resolveUploadPath(fileName));
+  } catch {
+    // arquivo já pode não existir em disco — não bloqueia a exclusão do registro
+  }
 }

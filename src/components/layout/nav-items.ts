@@ -56,9 +56,14 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: "Documentos",
+    items: [
+      { label: "Documentos", href: "/documentos", icon: FileText, implemented: true },
+    ],
+  },
+  {
     title: "Operação (próximas fases)",
     items: [
-      { label: "Documentos", href: "/em-breve/documentos", icon: FileText, implemented: false, phase: "Fase 7" },
       { label: "Grupos de WhatsApp", href: "/em-breve/grupos", icon: MessagesSquare, implemented: false, phase: "Fase 8" },
       { label: "Produtos", href: "/em-breve/produtos", icon: Package, implemented: false, phase: "Fase 9" },
       { label: "Links de afiliados", href: "/em-breve/links", icon: Link2, implemented: false, phase: "Fase 9" },

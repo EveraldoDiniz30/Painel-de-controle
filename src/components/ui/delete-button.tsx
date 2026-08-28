@@ -18,6 +18,7 @@ export function DeleteButton({
       variant="ghost"
       size="sm"
       disabled={pending}
+      aria-label="Excluir"
       onClick={() => {
         if (confirm(confirmMessage)) {
           startTransition(() => {

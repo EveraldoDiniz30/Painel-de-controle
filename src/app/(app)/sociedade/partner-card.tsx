@@ -28,7 +28,7 @@ export function PartnerCard({ partner }: { partner: Partner }) {
               </Badge>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+          <Button variant="ghost" size="sm" aria-label="Editar" onClick={() => setOpen(true)}>
             <Pencil className="h-4 w-4" />
           </Button>
         </div>
