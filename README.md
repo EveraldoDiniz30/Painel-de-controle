@@ -39,6 +39,10 @@ npm run db:seed             # cria Júnior, Maike, meios de pagamento e categori
 npm run dev
 ```
 
+`npm install` já gera o Prisma Client automaticamente (script `postinstall`). Se
+aparecer o erro `@prisma/client did not initialize yet`, rode `npx prisma generate`
+manualmente e reinicie o `npm run dev`.
+
 Login de teste (criado pelo seed):
 
 | Sócio | E-mail | Senha |
