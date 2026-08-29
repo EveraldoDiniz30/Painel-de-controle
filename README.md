@@ -153,6 +153,9 @@ dados fictícios — o dashboard consulta o banco de verdade.
 - [x] Auditoria de alterações financeiras e de documentos
 - [x] Responsivo (sidebar colapsável, cards em grid, gráficos e tabelas com
       scroll horizontal em telas pequenas)
+- [x] Sidebar enxuta: os módulos de fases futuras ficam agrupados e recolhidos
+      por padrão ("Operação (próximas fases)"), sem disputar espaço com o que
+      já está em uso no dia a dia
 
 Testado manualmente via Playwright (login, CRUD de cada módulo, edição, exclusão,
 upload/visualização/exclusão de comprovante e documento avulso, cálculo de
@@ -166,7 +169,7 @@ em vez de links fictícios ou funcionalidades incompletas:
 
 | Fase | Módulo | Observação |
 |---|---|---|
-| 8 | Grupos de WhatsApp | Tabelas `Group` e `GroupMembershipHistory` já existem no schema |
+| 8 | Grupos de WhatsApp | **Em espera por decisão do usuário.** Tabelas `Group` e `GroupMembershipHistory` já existem no schema, mas o registro manual de participantes foi descartado (o fluxo do grupo é rápido demais para alguém digitar o número periodicamente). Só faz sentido implementar quando houver acesso real à WhatsApp Business API para contagem automática. |
 | 9 | Produtos, Links de afiliados, Comissões | Tabelas já existem no schema |
 | 10 | Marketing / Campanhas | Tabela `Campaign` já existe no schema |
 | 11 | Relatórios (exportação CSV/XLSX/PDF) | |
