@@ -141,6 +141,23 @@ export async function getExpensesByPartner(from: Date, to: Date) {
   }));
 }
 
+export async function getClicksBySource(from: Date, to: Date) {
+  const clicks = await prisma.click.findMany({
+    where: { createdAt: { gte: from, lte: to } },
+    include: { affiliateLink: true },
+  });
+
+  const map = new Map<string, number>();
+  for (const click of clicks) {
+    const label = click.affiliateLink.source ?? "Não informado";
+    map.set(label, (map.get(label) ?? 0) + 1);
+  }
+
+  return Array.from(map.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
 export async function getExpensesByPaymentMethod(from: Date, to: Date) {
   const expenses = await prisma.expense.findMany({
     where: { date: { gte: from, lte: to }, status: { not: "CANCELADA" } },

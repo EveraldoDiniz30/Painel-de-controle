@@ -19,5 +19,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|uploads).*)"],
+  // "/l/*" fica de fora: são os links curtos de divulgação, precisam ser
+  // públicos (clicados a partir do WhatsApp/Instagram, sem sessão).
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|uploads|l/).*)"],
 };

@@ -131,11 +131,11 @@ banco de dados — ficasse resolvida de uma vez):
 `AffiliateLink`, `Click`, `Commission`, `Campaign`, `Document`, `AuditLog`,
 `Integration`, `AiConversation`.
 
-As tabelas sem interface ainda (Grupos, Produtos, Links, Comissões, Campanhas)
-aparecem nos cards do dashboard com valores reais (zero, por enquanto) em vez de
-dados fictícios — o dashboard consulta o banco de verdade.
+As tabelas sem interface ainda (Grupos, Comissões, Campanhas) aparecem nos cards
+do dashboard com valores reais (zero, por enquanto) em vez de dados fictícios —
+o dashboard consulta o banco de verdade.
 
-## 5. O que está implementado (Fases 1–7)
+## 5. O que está implementado (Fases 1–7 + parte da 9)
 
 - [x] Fundação: Next.js + TypeScript + Tailwind + Prisma + banco de dados
 - [x] Autenticação (Júnior e Maike, ambos administradores) e proteção de rotas
@@ -156,6 +156,13 @@ dados fictícios — o dashboard consulta o banco de verdade.
 - [x] Sidebar enxuta: os módulos de fases futuras ficam agrupados e recolhidos
       por padrão ("Operação (próximas fases)"), sem disputar espaço com o que
       já está em uso no dia a dia
+- [x] Produtos: cadastro simples (nome, categoria, plataforma, preço, link original)
+- [x] Links de divulgação com rastreio de origem: cada produto pode ter vários
+      links próprios (`/l/<slug>`), um por canal (Grupo de WhatsApp, Meta Ads,
+      Google Ads, etc.). A rota `/l/[slug]` é pública (sem login — precisa ser
+      clicável a partir do WhatsApp/Instagram), registra o clique e redireciona
+      para o link de destino. O dashboard e a tela de Links mostram cliques por
+      origem, por link e por produto, no período filtrado.
 
 Testado manualmente via Playwright (login, CRUD de cada módulo, edição, exclusão,
 upload/visualização/exclusão de comprovante e documento avulso, cálculo de
@@ -170,7 +177,7 @@ em vez de links fictícios ou funcionalidades incompletas:
 | Fase | Módulo | Observação |
 |---|---|---|
 | 8 | Grupos de WhatsApp | **Em espera por decisão do usuário.** Tabelas `Group` e `GroupMembershipHistory` já existem no schema, mas o registro manual de participantes foi descartado (o fluxo do grupo é rápido demais para alguém digitar o número periodicamente). Só faz sentido implementar quando houver acesso real à WhatsApp Business API para contagem automática. |
-| 9 | Produtos, Links de afiliados, Comissões | Tabelas já existem no schema |
+| 9 | Comissões | Produtos e Links de divulgação já foram implementados (ver seção 5); falta só o controle de comissão prevista/aprovada/recebida por venda. Tabela `Commission` já existe no schema |
 | 10 | Marketing / Campanhas | Tabela `Campaign` já existe no schema |
 | 11 | Relatórios (exportação CSV/XLSX/PDF) | |
 | 12 | MJ Assistant (IA) | Tabela `AiConversation` já existe; requer definir o provedor de IA e a política de confirmação para ações que alteram dados |

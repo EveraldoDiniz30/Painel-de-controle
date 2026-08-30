@@ -20,6 +20,26 @@ export const REVENUE_STATUS_LABELS: Record<string, string> = {
   CANCELADA: "Cancelada",
 };
 
+// Origens de clique sugeridas para os links de afiliado — o campo continua
+// sendo texto livre no banco, então novas origens não exigem migração.
+export const CLICK_SOURCE_PRESETS = [
+  "Grupo de WhatsApp",
+  "Meta Ads (Facebook/Instagram)",
+  "Google Ads",
+  "Orgânico (outro)",
+];
+
+export const PRODUCT_STATUS_LABELS: Record<string, string> = {
+  ATIVO: "Ativo",
+  INATIVO: "Inativo",
+  ESGOTADO: "Esgotado",
+};
+
+export const AFFILIATE_LINK_STATUS_LABELS: Record<string, string> = {
+  ATIVO: "Ativo",
+  INATIVO: "Inativo",
+};
+
 export const DOCUMENT_CATEGORY_LABELS: Record<string, string> = {
   COMPROVANTE: "Comprovante",
   NOTA_FISCAL: "Nota fiscal",

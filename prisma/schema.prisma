@@ -327,8 +327,9 @@ enum AffiliateLinkStatus {
 
 model AffiliateLink {
   id         String              @id @default(cuid())
+  slug       String              @unique // usado no link curto /l/[slug]
   productId  String
-  product    Product             @relation(fields: [productId], references: [id])
+  product    Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
   platform   String?
   url        String
   source     String?

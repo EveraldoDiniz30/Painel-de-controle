@@ -27,6 +27,7 @@ import {
   getExpensesByCategory,
   getExpensesByPartner,
   getExpensesByPaymentMethod,
+  getClicksBySource,
 } from "@/lib/dashboard-data";
 
 export default async function DashboardPage({
@@ -37,12 +38,13 @@ export default async function DashboardPage({
   const sp = await searchParams;
   const { from, to } = getPeriodFromSearchParams(sp);
 
-  const [kpis, trend, byCategory, byPartner, byPaymentMethod] = await Promise.all([
+  const [kpis, trend, byCategory, byPartner, byPaymentMethod, clicksBySource] = await Promise.all([
     getDashboardKpis(from, to),
     getFinancialTrend(from, to),
     getExpensesByCategory(from, to),
     getExpensesByPartner(from, to),
     getExpensesByPaymentMethod(from, to),
+    getClicksBySource(from, to),
   ]);
 
   return (
@@ -116,23 +118,39 @@ export default async function DashboardPage({
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Despesas por meio de pagamento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MagnitudeBarChart data={byPaymentMethod} emptyLabel="Nenhuma despesa no período" />
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Despesas por meio de pagamento</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MagnitudeBarChart data={byPaymentMethod} emptyLabel="Nenhuma despesa no período" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Cliques por origem</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MagnitudeBarChart
+              data={clicksBySource}
+              categorical
+              valueType="count"
+              emptyLabel="Nenhum clique registrado no período"
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="border-dashed">
         <CardContent className="flex items-start gap-3 pt-5 text-sm text-muted">
           <Receipt className="mt-0.5 h-5 w-5 shrink-0" />
           <p>
             Vendas registradas (via comissões) no período:{" "}
-            <strong className="text-foreground">{kpis.salesCount}</strong>. Grupos, produtos e
-            comissões ainda não têm cadastro próprio — os números acima refletem o banco de dados
-            real e ficarão completos nas próximas fases (ver roadmap).
+            <strong className="text-foreground">{kpis.salesCount}</strong>. Grupos e comissões
+            ainda não têm cadastro próprio — os números acima refletem o banco de dados real e
+            ficarão completos nas próximas fases (ver roadmap).
           </p>
         </CardContent>
       </Card>

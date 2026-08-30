@@ -8,20 +8,25 @@ import { BarChart3 } from "lucide-react";
 
 type Item = { label: string; value: number };
 
+const currencyFormatter = (v: number) => formatCurrency(v).replace(/,00$/, "");
+const integerFormatter = (v: number) => String(Math.round(v));
+
 /**
  * Comparação de magnitude entre categorias (ex: despesas por categoria,
- * despesas por meio de pagamento). Um único tom (sequencial) por padrão;
- * `categorical` usa a paleta fixa quando a identidade de cada barra importa
- * (ex: comparar os sócios).
+ * despesas por meio de pagamento, cliques por origem). Um único tom
+ * (sequencial) por padrão; `categorical` usa a paleta fixa quando a
+ * identidade de cada barra importa (ex: comparar os sócios ou origens).
  */
 export function MagnitudeBarChart({
   data,
   emptyLabel = "Sem dados no período",
   categorical = false,
+  valueType = "currency",
 }: {
   data: Item[];
   emptyLabel?: string;
   categorical?: boolean;
+  valueType?: "currency" | "count";
 }) {
   if (data.length === 0) {
     return (
@@ -33,6 +38,7 @@ export function MagnitudeBarChart({
     );
   }
 
+  const formatValue = valueType === "count" ? integerFormatter : currencyFormatter;
   const height = Math.max(120, data.length * 40 + 40);
 
   return (
@@ -46,10 +52,11 @@ export function MagnitudeBarChart({
         <CartesianGrid stroke={CHART_INK.grid} horizontal={false} />
         <XAxis
           type="number"
+          allowDecimals={valueType !== "count"}
           tick={{ fill: CHART_INK.muted, fontSize: 12 }}
           axisLine={false}
           tickLine={false}
-          tickFormatter={(v) => formatCurrency(v).replace(/,00$/, "")}
+          tickFormatter={formatValue}
         />
         <YAxis
           type="category"
@@ -60,7 +67,7 @@ export function MagnitudeBarChart({
           width={150}
         />
         <Tooltip
-          formatter={(value) => formatCurrency(Number(value))}
+          formatter={(value) => formatValue(Number(value))}
           contentStyle={{ borderRadius: 12, border: `1px solid ${CHART_INK.grid}`, fontSize: 13 }}
         />
         <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={28}>

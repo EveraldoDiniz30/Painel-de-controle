@@ -62,11 +62,16 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: "Afiliados",
+    items: [
+      { label: "Produtos", href: "/produtos", icon: Package, implemented: true },
+      { label: "Links de divulgação", href: "/links", icon: Link2, implemented: true },
+    ],
+  },
+  {
     title: "Operação (próximas fases)",
     items: [
       { label: "Grupos de WhatsApp", href: "/em-breve/grupos", icon: MessagesSquare, implemented: false, phase: "Fase 8" },
-      { label: "Produtos", href: "/em-breve/produtos", icon: Package, implemented: false, phase: "Fase 9" },
-      { label: "Links de afiliados", href: "/em-breve/links", icon: Link2, implemented: false, phase: "Fase 9" },
       { label: "Comissões", href: "/em-breve/comissoes", icon: Percent, implemented: false, phase: "Fase 9" },
       { label: "Marketing", href: "/em-breve/marketing", icon: Megaphone, implemented: false, phase: "Fase 10" },
       { label: "Relatórios", href: "/em-breve/relatorios", icon: BarChart3, implemented: false, phase: "Fase 11" },

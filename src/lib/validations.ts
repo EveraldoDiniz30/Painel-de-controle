@@ -81,4 +81,28 @@ export const withdrawalSchema = z.object({
   notes: z.string().trim().optional(),
 });
 
+export const productSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1, "Informe o nome"),
+  category: z.string().trim().optional(),
+  platform: z.string().trim().optional(),
+  price: z.coerce.number().nonnegative().optional().or(z.literal("").transform(() => undefined)),
+  originalUrl: z
+    .string()
+    .trim()
+    .url("Informe uma URL válida")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  status: z.enum(["ATIVO", "INATIVO", "ESGOTADO"]),
+  notes: z.string().trim().optional(),
+});
+
+export const affiliateLinkSchema = z.object({
+  id: z.string().optional(),
+  productId: z.string().min(1, "Selecione o produto"),
+  url: z.string().trim().url("Informe uma URL de destino válida"),
+  source: z.string().trim().min(1, "Informe a origem"),
+  status: z.enum(["ATIVO", "INATIVO"]),
+});
+
 export type ActionState = { error?: string; success?: boolean };
