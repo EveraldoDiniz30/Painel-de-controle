@@ -1,0 +1,528 @@
+// MJ Ofertas — Schema do banco de dados
+// Provider: SQLite para desenvolvimento (zero-config). Para produção,
+// trocar "provider" para "postgresql" e ajustar DATABASE_URL — os tipos
+// usados aqui são compatíveis com ambos.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// USUÁRIOS / AUTENTICAÇÃO / PERMISSÕES
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMINISTRADOR
+  FINANCEIRO
+  OPERADOR
+  VISUALIZACAO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(ADMINISTRADOR)
+  active       Boolean  @default(true)
+  partner      Partner?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs       AuditLog[]
+  uploadedDocs    Document[]
+  aiConversations AiConversation[]
+}
+
+// ---------------------------------------------------------------------------
+// SOCIEDADE
+// ---------------------------------------------------------------------------
+
+model Partner {
+  id              String   @id @default(cuid())
+  name            String
+  userId          String?  @unique
+  user            User?    @relation(fields: [userId], references: [id])
+  sharePercentage Float    @default(50) // participação societária (%)
+  active          Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  paymentMethods PaymentMethod[]
+  expenses       Expense[]
+  contributions  Contribution[]
+  withdrawals    Withdrawal[]
+  groups         Group[]
+}
+
+// ---------------------------------------------------------------------------
+// MEIOS DE PAGAMENTO / CONTAS
+// ---------------------------------------------------------------------------
+
+enum PaymentMethodType {
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  CONTA_BANCARIA
+  CARTEIRA_DIGITAL
+  DINHEIRO
+  OUTRO
+}
+
+model PaymentMethod {
+  id             String            @id @default(cuid())
+  name           String
+  ownerId        String
+  owner          Partner           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  type           PaymentMethodType
+  institution    String?
+  lastFourDigits String? // nunca armazenar o número completo do cartão
+  creditLimit    Float?
+  active         Boolean           @default(true)
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  expensesPaidWith   Expense[]      @relation("ExpensePaymentMethod")
+  revenuesReceivedIn Revenue[]      @relation("RevenueDestinationAccount")
+  contributionsIn    Contribution[] @relation("ContributionDestinationAccount")
+  withdrawalsFrom    Withdrawal[]   @relation("WithdrawalAccount")
+
+  @@index([ownerId])
+}
+
+// ---------------------------------------------------------------------------
+// CATEGORIAS (despesas e receitas)
+// ---------------------------------------------------------------------------
+
+enum CategoryType {
+  DESPESA
+  RECEITA
+}
+
+model Category {
+  id       String       @id @default(cuid())
+  name     String
+  type     CategoryType
+  parentId String?
+  parent   Category?    @relation("CategoryToSub", fields: [parentId], references: [id])
+  children Category[]   @relation("CategoryToSub")
+
+  expenses Expense[]
+  revenues Revenue[]
+
+  @@unique([name, type, parentId])
+}
+
+// ---------------------------------------------------------------------------
+// DESPESAS
+// ---------------------------------------------------------------------------
+
+enum ExpenseStatus {
+  PENDENTE
+  PAGA
+  CANCELADA
+}
+
+model Expense {
+  id              String         @id @default(cuid())
+  date            DateTime
+  description     String
+  categoryId      String?
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  amount          Float
+  paidById        String
+  paidBy          Partner        @relation(fields: [paidById], references: [id])
+  paymentMethodId String?
+  paymentMethod   PaymentMethod? @relation("ExpensePaymentMethod", fields: [paymentMethodId], references: [id])
+  status          ExpenseStatus  @default(PAGA)
+  recurring       Boolean        @default(false)
+  notes           String?
+  projectName     String?
+  campaignId      String?
+  campaign        Campaign?      @relation(fields: [campaignId], references: [id])
+  groupId         String?
+  group           Group?         @relation(fields: [groupId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  documents Document[]
+
+  @@index([date])
+  @@index([paidById])
+}
+
+// ---------------------------------------------------------------------------
+// RECEITAS
+// ---------------------------------------------------------------------------
+
+enum RevenueStatus {
+  PREVISTA
+  RECEBIDA
+  CANCELADA
+}
+
+model Revenue {
+  id                   String         @id @default(cuid())
+  date                 DateTime
+  description          String
+  platform             String?
+  source               String?
+  grossAmount          Float
+  fees                 Float          @default(0)
+  netAmount            Float
+  status               RevenueStatus  @default(PREVISTA)
+  categoryId           String?
+  category             Category?      @relation(fields: [categoryId], references: [id])
+  destinationAccountId String?
+  destinationAccount   PaymentMethod? @relation("RevenueDestinationAccount", fields: [destinationAccountId], references: [id])
+  notes                String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  documents Document[]
+
+  @@index([date])
+}
+
+// ---------------------------------------------------------------------------
+// APORTES DE SÓCIOS
+// ---------------------------------------------------------------------------
+
+model Contribution {
+  id                   String         @id @default(cuid())
+  partnerId            String
+  partner              Partner        @relation(fields: [partnerId], references: [id])
+  amount               Float
+  date                 DateTime
+  originDescription    String?
+  destinationAccountId String?
+  destinationAccount   PaymentMethod? @relation("ContributionDestinationAccount", fields: [destinationAccountId], references: [id])
+  notes                String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  documents Document[]
+
+  @@index([date])
+  @@index([partnerId])
+}
+
+// ---------------------------------------------------------------------------
+// RETIRADAS DE SÓCIOS
+// ---------------------------------------------------------------------------
+
+model Withdrawal {
+  id        String         @id @default(cuid())
+  partnerId String
+  partner   Partner        @relation(fields: [partnerId], references: [id])
+  amount    Float
+  date      DateTime
+  reason    String?
+  accountId String?
+  account   PaymentMethod? @relation("WithdrawalAccount", fields: [accountId], references: [id])
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  documents Document[]
+
+  @@index([date])
+  @@index([partnerId])
+}
+
+// ---------------------------------------------------------------------------
+// GRUPOS DE WHATSAPP
+// ---------------------------------------------------------------------------
+
+enum GroupStatus {
+  ATIVO
+  INATIVO
+  ARQUIVADO
+}
+
+model Group {
+  id                  String      @id @default(cuid())
+  name                String
+  description         String?
+  link                String?
+  platform            String      @default("WhatsApp")
+  foundedAt           DateTime?
+  status              GroupStatus @default(ATIVO)
+  category            String?
+  responsibleId       String?
+  responsible         Partner?    @relation(fields: [responsibleId], references: [id])
+  currentParticipants Int         @default(0)
+  participantLimit    Int?
+  notes               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  membershipHistory GroupMembershipHistory[]
+  affiliateLinks    AffiliateLink[]
+  campaigns         Campaign[]
+  expenses          Expense[]
+  documents         Document[]
+}
+
+model GroupMembershipHistory {
+  id                  String   @id @default(cuid())
+  groupId             String
+  group               Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  date                DateTime
+  participantCount    Int
+  createdAt           DateTime @default(now())
+
+  @@index([groupId, date])
+}
+
+// ---------------------------------------------------------------------------
+// PRODUTOS
+// ---------------------------------------------------------------------------
+
+enum ProductStatus {
+  ATIVO
+  INATIVO
+  ESGOTADO
+}
+
+model Product {
+  id                String        @id @default(cuid())
+  name              String
+  description       String?
+  category          String?
+  platform          String?
+  price             Float?
+  promoPrice        Float?
+  commissionValue   Float?
+  commissionPercent Float?
+  originalUrl       String?
+  imageUrl          String?
+  supplier          String?
+  status            ProductStatus @default(ATIVO)
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  affiliateLinks AffiliateLink[]
+  commissions    Commission[]
+  campaigns      Campaign[]
+  documents      Document[]
+}
+
+// ---------------------------------------------------------------------------
+// LINKS DE AFILIADOS
+// ---------------------------------------------------------------------------
+
+enum AffiliateLinkStatus {
+  ATIVO
+  INATIVO
+}
+
+model AffiliateLink {
+  id         String              @id @default(cuid())
+  slug       String              @unique // usado no link curto /l/[slug]
+  productId  String
+  product    Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  platform   String?
+  url        String
+  source     String?
+  campaignId String?
+  campaign   Campaign?           @relation(fields: [campaignId], references: [id])
+  groupId    String?
+  group      Group?              @relation(fields: [groupId], references: [id])
+  date       DateTime            @default(now())
+  status     AffiliateLinkStatus @default(ATIVO)
+  createdAt  DateTime            @default(now())
+
+  clicks Click[]
+
+  @@index([productId])
+}
+
+model Click {
+  id              String        @id @default(cuid())
+  affiliateLinkId String
+  affiliateLink   AffiliateLink @relation(fields: [affiliateLinkId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  source          String?
+
+  @@index([affiliateLinkId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// COMISSÕES
+// ---------------------------------------------------------------------------
+
+enum CommissionStatus {
+  PREVISTA
+  APROVADA
+  PENDENTE
+  CANCELADA
+  RECEBIDA
+}
+
+model Commission {
+  id                  String           @id @default(cuid())
+  platform            String?
+  productId           String?
+  product             Product?         @relation(fields: [productId], references: [id])
+  orderId             String?
+  saleValue           Float
+  commissionValue     Float
+  status              CommissionStatus @default(PREVISTA)
+  date                DateTime
+  expectedPaymentDate DateTime?
+  receivedDate        DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([date])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// MARKETING / CAMPANHAS
+// ---------------------------------------------------------------------------
+
+enum CampaignStatus {
+  PLANEJADA
+  ATIVA
+  PAUSADA
+  ENCERRADA
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  platform    String?
+  objective   String?
+  budget      Float?
+  spent       Float          @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  status      CampaignStatus @default(PLANEJADA)
+  groupId     String?
+  group       Group?         @relation(fields: [groupId], references: [id])
+  productId   String?
+  product     Product?       @relation(fields: [productId], references: [id])
+  impressions Int?
+  reach       Int?
+  clicks      Int?
+  conversions Int?
+  revenue     Float?
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  expenses       Expense[]
+  affiliateLinks AffiliateLink[]
+  documents      Document[]
+}
+
+// ---------------------------------------------------------------------------
+// DOCUMENTOS
+// ---------------------------------------------------------------------------
+
+enum DocumentCategory {
+  COMPROVANTE
+  NOTA_FISCAL
+  CARTAO
+  RELATORIO
+  MERCADO_LIVRE
+  ANUNCIO
+  CONTRATO
+  FINANCEIRO
+  OUTRO
+}
+
+model Document {
+  id           String           @id @default(cuid())
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+  path         String
+  category     DocumentCategory @default(OUTRO)
+  uploadedById String
+  uploadedBy   User             @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime         @default(now())
+
+  expenseId      String?
+  expense        Expense?      @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  revenueId      String?
+  revenue        Revenue?      @relation(fields: [revenueId], references: [id], onDelete: Cascade)
+  contributionId String?
+  contribution   Contribution? @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  withdrawalId   String?
+  withdrawal     Withdrawal?   @relation(fields: [withdrawalId], references: [id], onDelete: Cascade)
+  campaignId     String?
+  campaign       Campaign?     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  productId      String?
+  product        Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  groupId        String?
+  group          Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([uploadedById])
+}
+
+// ---------------------------------------------------------------------------
+// AUDITORIA
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String // CREATE | UPDATE | DELETE
+  entity    String // ex: "Expense"
+  entityId  String
+  summary   String // descrição legível, ex: "criou despesa de R$ 100"
+  changes   String? // JSON serializado com o diff
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// INTEGRAÇÕES (camada preparada para credenciais futuras)
+// ---------------------------------------------------------------------------
+
+enum IntegrationStatus {
+  NAO_CONFIGURADA
+  CONFIGURADA
+  ERRO
+}
+
+model Integration {
+  id        String            @id @default(cuid())
+  provider  String            @unique // ex: "mercado_livre", "whatsapp", "meta_ads"
+  status    IntegrationStatus @default(NAO_CONFIGURADA)
+  config    String? // JSON de configuração não sensível
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// MJ ASSISTANT (IA)
+// ---------------------------------------------------------------------------
+
+model AiConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String?
+  messages  String // JSON serializado das mensagens
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
